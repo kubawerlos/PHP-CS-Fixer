@@ -72,40 +72,58 @@ EOT
                 continue;
             }
 
+            $distinctVariableIndex = $index;
             $variableTokens = [
-                $index => $token,
+                $distinctVariableIndex => [
+                    'tokens' => [$index => $token],
+                    'firstVariableTokenIndex' => $index,
+                    'lastVariableTokenIndex' => $index,
+                ],
             ];
-            $firstVariableTokenIndex = $index;
-            $lastVariableTokenIndex = $index;
 
             $nextIndex = $index + 1;
             while (!$this->isStringPartToken($tokens[$nextIndex])) {
-                $variableTokens[$nextIndex] = $tokens[$nextIndex];
-                $lastVariableTokenIndex = $nextIndex;
-                ++$nextIndex;
-            }
-
-            if (1 === \count($variableTokens)) {
-                $tokens->overrideRange($index, $index, [
-                    new Token([T_DOLLAR_OPEN_CURLY_BRACES, '${']),
-                    new Token([T_STRING_VARNAME, substr($token->getContent(), 1)]),
-                    new Token([CT::T_DOLLAR_CLOSE_CURLY_BRACES, '}']),
-                ]);
-            } else {
-                foreach ($variableTokens as $variablePartIndex => $variablePartToken) {
-                    if ($variablePartToken->isGivenKind(T_NUM_STRING)) {
-                        $tokens[$variablePartIndex] = new Token([T_LNUMBER, $variablePartToken->getContent()]);
-
-                        continue;
-                    }
-
-                    if ($variablePartToken->isGivenKind(T_STRING) && $tokens[$variablePartIndex + 1]->equals(']')) {
-                        $tokens[$variablePartIndex] = new Token([T_CONSTANT_ENCAPSED_STRING, "'".$variablePartToken->getContent()."'"]);
-                    }
+                if ($tokens[$nextIndex]->isGivenKind(T_VARIABLE)) {
+                    $distinctVariableIndex = $nextIndex;
+                    $variableTokens[$distinctVariableIndex] = [
+                        'tokens' => [$nextIndex => $tokens[$nextIndex]],
+                        'firstVariableTokenIndex' => $nextIndex,
+                        'lastVariableTokenIndex' => $nextIndex,
+                    ];
+                } else {
+                    $variableTokens[$distinctVariableIndex]['tokens'][$nextIndex] = $tokens[$nextIndex];
+                    $variableTokens[$distinctVariableIndex]['lastVariableTokenIndex'] = $nextIndex;
                 }
 
-                $tokens->insertAt($lastVariableTokenIndex + 1, new Token([CT::T_CURLY_CLOSE, '}']));
-                $tokens->insertAt($firstVariableTokenIndex, new Token([T_CURLY_OPEN, '{']));
+                ++$nextIndex;
+            }
+            krsort($variableTokens, \SORT_NUMERIC);
+
+            foreach ($variableTokens as $distinctVariableSet) {
+                if (1 === \count($distinctVariableSet['tokens'])) {
+                    $singleVariableIndex = key($distinctVariableSet['tokens']);
+                    $singleVariableToken = current($distinctVariableSet['tokens']);
+                    $tokens->overrideRange($singleVariableIndex, $singleVariableIndex, [
+                        new Token([T_DOLLAR_OPEN_CURLY_BRACES, '${']),
+                        new Token([T_STRING_VARNAME, substr($singleVariableToken->getContent(), 1)]),
+                        new Token([CT::T_DOLLAR_CLOSE_CURLY_BRACES, '}']),
+                    ]);
+                } else {
+                    foreach ($distinctVariableSet['tokens'] as $variablePartIndex => $variablePartToken) {
+                        if ($variablePartToken->isGivenKind(T_NUM_STRING)) {
+                            $tokens[$variablePartIndex] = new Token([T_LNUMBER, $variablePartToken->getContent()]);
+
+                            continue;
+                        }
+
+                        if ($variablePartToken->isGivenKind(T_STRING) && $tokens[$variablePartIndex + 1]->equals(']')) {
+                            $tokens[$variablePartIndex] = new Token([T_CONSTANT_ENCAPSED_STRING, "'".$variablePartToken->getContent()."'"]);
+                        }
+                    }
+
+                    $tokens->insertAt($distinctVariableSet['lastVariableTokenIndex'] + 1, new Token([CT::T_CURLY_CLOSE, '}']));
+                    $tokens->insertAt($distinctVariableSet['firstVariableTokenIndex'], new Token([T_CURLY_OPEN, '{']));
+                }
             }
         }
     }
