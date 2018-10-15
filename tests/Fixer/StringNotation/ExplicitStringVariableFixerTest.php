@@ -52,7 +52,7 @@ final class ExplicitStringVariableFixerTest extends AbstractFixerTestCase
                 '<?php $a = "My name is $name!";',
             ],
             [
-                '<?php "My name is {$james$bond}!";',
+                '<?php "My name is ${james}${bond}!";',
                 '<?php "My name is $james$bond!";',
             ],
             [
@@ -132,6 +132,10 @@ EOF;
             [
                 '<?php $a = "Complex array chaining not allowed {$array[1]}[2][MY_CONSTANT] text";',
                 '<?php $a = "Complex array chaining not allowed $array[1][2][MY_CONSTANT] text";',
+            ],
+            [
+                '<?php $a = "Concatenation: ${james}${bond}{$object->property}{$array[1]}!";',
+                '<?php $a = "Concatenation: $james$bond$object->property$array[1]!";',
             ],
             [
                 '<?php $a = "{$a->b} start";',
