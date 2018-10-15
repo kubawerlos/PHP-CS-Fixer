@@ -189,6 +189,13 @@ EOF;
                 '<?php $a = "*{$a[0]}{$b[1]}X{$c[2]}{$d[3]}";',
                 '<?php $a = "*$a[0]$b[1]X$c[2]$d[3]";',
             ],
+            [
+                '<?php $a = `echo $foo`;',
+            ],
+            [
+                '<?php $a = "My name is ${name}!"; $a = `echo $foo`; $a = "{$a->b} start";',
+                '<?php $a = "My name is $name!"; $a = `echo $foo`; $a = "$a->b start";',
+            ],
         ];
     }
 

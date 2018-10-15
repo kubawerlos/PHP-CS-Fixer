@@ -45,6 +45,7 @@ EOT
                 ."\n".'- PHP manual marks `"$var"` syntax as implicit and `"${var}"` syntax as explicit: explicit code should always be preferred'
                 ."\n".'- Explicit syntax allows word concatenation inside strings, e.g. `"${var}IsAVar"`, implicit doesn\'t'
                 ."\n".'- Explicit syntax is easier to detect for IDE/editors and therefore has colors/hightlight with higher contrast, which is easier to read'
+            ."\n".'Backtick operator is skipped because it is harder to handle; you can use `backtick_to_shell_exec` fixer to normalize backticks to strings'
         );
     }
 
@@ -61,9 +62,16 @@ EOT
      */
     protected function applyFix(\SplFileInfo $file, Tokens $tokens)
     {
+        $backtickStarted = false;
         for ($index = \count($tokens) - 1; $index > 0; --$index) {
             $token = $tokens[$index];
-            if (!$token->isGivenKind(T_VARIABLE)) {
+            if ($token->equals('`')) {
+                $backtickStarted = !$backtickStarted;
+
+                continue;
+            }
+
+            if ($backtickStarted || !$token->isGivenKind(T_VARIABLE)) {
                 continue;
             }
 
