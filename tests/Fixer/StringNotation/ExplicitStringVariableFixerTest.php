@@ -196,6 +196,10 @@ EOF;
                 '<?php $a = "My name is ${name}!"; $a = `echo $foo`; $a = "{$a->b} start";',
                 '<?php $a = "My name is $name!"; $a = `echo $foo`; $a = "$a->b start";',
             ],
+            [
+                '<?php $mobileNumberVisible = "***-***-{$last4Digits[0]}{$last4Digits[1]}-{$last4Digits[2]}{$last4Digits[3]}";',
+                '<?php $mobileNumberVisible = "***-***-$last4Digits[0]$last4Digits[1]-$last4Digits[2]$last4Digits[3]";',
+            ],
         ];
     }
 
