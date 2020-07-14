@@ -106,7 +106,6 @@ final class FixerFactoryTest extends TestCase
             [$fixers['general_phpdoc_annotation_remove'], $fixers['phpdoc_separation']],
             [$fixers['general_phpdoc_annotation_remove'], $fixers['phpdoc_trim']],
             [$fixers['implode_call'], $fixers['method_argument_space']],
-            [$fixers['indentation_type'], $fixers['phpdoc_indent']],
             [$fixers['is_null'], $fixers['yoda_style']],
             [$fixers['line_ending'], $fixers['braces']],
             [$fixers['list_syntax'], $fixers['binary_operator_spaces']],
@@ -194,7 +193,6 @@ final class FixerFactoryTest extends TestCase
             [$fixers['phpdoc_annotation_without_dot'], $fixers['phpdoc_types']],
             [$fixers['phpdoc_annotation_without_dot'], $fixers['phpdoc_types_order']],
             [$fixers['phpdoc_no_access'], $fixers['no_empty_phpdoc']],
-            [$fixers['phpdoc_no_access'], $fixers['phpdoc_order']],
             [$fixers['phpdoc_no_access'], $fixers['phpdoc_separation']],
             [$fixers['phpdoc_no_access'], $fixers['phpdoc_trim']],
             [$fixers['phpdoc_no_alias_tag'], $fixers['phpdoc_add_missing_param_annotation']],
@@ -204,7 +202,6 @@ final class FixerFactoryTest extends TestCase
             [$fixers['phpdoc_no_empty_return'], $fixers['phpdoc_separation']],
             [$fixers['phpdoc_no_empty_return'], $fixers['phpdoc_trim']],
             [$fixers['phpdoc_no_package'], $fixers['no_empty_phpdoc']],
-            [$fixers['phpdoc_no_package'], $fixers['phpdoc_order']],
             [$fixers['phpdoc_no_package'], $fixers['phpdoc_separation']],
             [$fixers['phpdoc_no_package'], $fixers['phpdoc_trim']],
             [$fixers['phpdoc_no_useless_inheritdoc'], $fixers['no_empty_phpdoc']],
@@ -304,14 +301,6 @@ final class FixerFactoryTest extends TestCase
      */
     public function testFixersPriorityPairsHaveIntegrationTest(FixerInterface $first, FixerInterface $second)
     {
-        // This structure contains older cases that are not yet covered by tests.
-        // It may only shrink, never add anything to it.
-        $casesWithoutTests = [
-            'indentation_type,phpdoc_indent.test',
-            'phpdoc_no_access,phpdoc_order.test',
-            'phpdoc_no_package,phpdoc_order.test',
-        ];
-
         $integrationTestName = $this->generateIntegrationTestName($first, $second);
         $file = $this->getIntegrationPriorityDirectory().$integrationTestName;
 
@@ -322,11 +311,6 @@ final class FixerFactoryTest extends TestCase
             $file = $this->getIntegrationPriorityDirectory().$this->generateIntegrationTestName($second, $first);
             $description = sprintf('Integration of fixers: %s,%s.', $second->getName(), $first->getName());
             $integrationTestExists = is_file($file);
-        }
-
-        if (\in_array($integrationTestName, $casesWithoutTests, true)) {
-            static::assertFalse($integrationTestExists, sprintf('Case "%s" already has an integration test, so it should be removed from "$casesWithoutTests".', $integrationTestName));
-            static::markTestIncomplete(sprintf('Case "%s" has no integration test yet, please help and add it.', $integrationTestName));
         }
 
         static::assertTrue($integrationTestExists, sprintf('There shall be an integration test "%s". How do you know that priority set up is good, if there is no integration test to check it?', $integrationTestName));
