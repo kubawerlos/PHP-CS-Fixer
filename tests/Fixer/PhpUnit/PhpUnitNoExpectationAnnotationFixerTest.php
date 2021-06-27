@@ -654,6 +654,7 @@ EOT
         {
             $this->setExpectedException(\Foo\Bar::class);
 
+            $this->initialize();
         }
     }',
                 '<?php
@@ -666,6 +667,7 @@ EOT
          */
         public function testSomething()
         {
+            $this->initialize();
         }
     }',
             ],
