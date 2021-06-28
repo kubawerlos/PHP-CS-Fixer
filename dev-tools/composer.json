@@ -3,13 +3,13 @@
         "php": "^8.0"
     },
     "require-dev": {
-        "ergebnis/composer-normalize": "^2.15.0",
+        "ergebnis/composer-normalize": "^2.15",
         "jangregor/phpstan-prophecy": "^0.8.1",
-        "maglnet/composer-require-checker": "^3.3.0",
-        "mi-schi/phpmd-extension": "^4.3.0",
-        "phpmd/phpmd": "^2.10.1",
-        "phpstan/phpstan": "0.12.33",
-        "phpstan/phpstan-phpunit": "0.12.13"
+        "maglnet/composer-require-checker": "^3.3",
+        "mi-schi/phpmd-extension": "^4.3",
+        "phpmd/phpmd": "^2.10",
+        "phpstan/phpstan": "^0.12.90",
+        "phpstan/phpstan-phpunit": "^0.12.20"
     },
     "config": {
         "optimize-autoloader": true,
