@@ -250,5 +250,32 @@ class Number
                 8 => CT::T_TYPE_ALTERNATION,
             ],
         ];
+
+        yield 'multiple function parameters' => [
+            '<?php function foo(A|B $x, C|D $y, E|F $z) {};',
+            [
+                6 => CT::T_TYPE_ALTERNATION,
+                13 => CT::T_TYPE_ALTERNATION,
+                20 => CT::T_TYPE_ALTERNATION,
+            ],
+        ];
+
+        yield 'function calls and function definitions' => [
+            '<?php
+                f1(CONST_A|CONST_B);
+                function f2(A|B $x, C|D $y, E|F $z) {};
+                f3(CONST_A|CONST_B);
+                function f4(A|B $x, C|D $y, E|F $z) {};
+                f5(CONST_A|CONST_B);
+            ',
+            [
+                15 => CT::T_TYPE_ALTERNATION,
+                22 => CT::T_TYPE_ALTERNATION,
+                29 => CT::T_TYPE_ALTERNATION,
+                52 => CT::T_TYPE_ALTERNATION,
+                59 => CT::T_TYPE_ALTERNATION,
+                66 => CT::T_TYPE_ALTERNATION,
+            ],
+        ];
     }
 }

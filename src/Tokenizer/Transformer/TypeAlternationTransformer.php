@@ -53,23 +53,7 @@ final class TypeAlternationTransformer extends AbstractTransformer
             return;
         }
 
-        $prevIndex = $tokens->getPrevMeaningfulToken($index);
-
-        if (!$tokens[$prevIndex]->isGivenKind([T_STRING, CT::T_ARRAY_TYPEHINT])) {
-            return;
-        }
-
-        do {
-            $prevIndex = $tokens->getPrevMeaningfulToken($prevIndex);
-
-            if (null === $prevIndex) {
-                return;
-            }
-
-            if (!$tokens[$prevIndex]->isGivenKind([T_NS_SEPARATOR, T_STRING])) {
-                break;
-            }
-        } while (true);
+        $prevIndex = $tokens->getTokenNotOfKindsSibling($index, -1, [T_NS_SEPARATOR, T_STRING, CT::T_ARRAY_TYPEHINT, T_WHITESPACE, T_COMMENT, T_DOC_COMMENT]);
 
         /** @var Token $prevToken */
         $prevToken = $tokens[$prevIndex];
@@ -84,39 +68,36 @@ final class TypeAlternationTransformer extends AbstractTransformer
             return;
         }
 
-        if (!$prevToken->equals('(')) {
+        if (!$prevToken->equalsAny(['(', ','])) {
             return;
         }
 
         $prevPrevTokenIndex = $tokens->getPrevMeaningfulToken($prevIndex);
 
-        /** @var Token $prePrevToken */
-        $prePrevToken = $tokens[$prevPrevTokenIndex];
-
-        if ($prePrevToken->isGivenKind([
-            T_CATCH, // `|` is part of catch `catch(X |`
-            T_FUNCTION, // `|` is part of an anonymous function variable `static function (X|Y`
-        ])) {
+        if ($tokens[$prevPrevTokenIndex]->isGivenKind([T_CATCH])) {
             $this->replaceToken($tokens, $index);
 
             return;
         }
 
-        if (\PHP_VERSION_ID >= 70400 && $prePrevToken->isGivenKind(T_FN)) {
-            $this->replaceToken($tokens, $index); // `|` is part of an array function variable `fn(int|null`
+        $functionKinds = [[T_FUNCTION]];
+        if (\defined('T_FN')) {
+            $functionKinds[] = [T_FN];
+        }
 
+        $functionIndex = $tokens->getPrevTokenOfKind($prevIndex, $functionKinds);
+        if (null === $functionIndex) {
             return;
         }
 
-        if (
-            $prePrevToken->isGivenKind(T_STRING)
-            && $tokens[$tokens->getPrevMeaningfulToken($prevPrevTokenIndex)]->isGivenKind(T_FUNCTION)
-        ) {
-            // `|` is part of function variable `function Foo (X|Y`
-            $this->replaceToken($tokens, $index);
+        $braceOpenIndex = $tokens->getNextTokenOfKind($functionIndex, ['(']);
+        $braceCloseIndex = $tokens->findBlockEnd(Tokens::BLOCK_TYPE_PARENTHESIS_BRACE, $braceOpenIndex);
 
+        if ($braceCloseIndex < $index) {
             return;
         }
+
+        $this->replaceToken($tokens, $index);
     }
 
     /**
