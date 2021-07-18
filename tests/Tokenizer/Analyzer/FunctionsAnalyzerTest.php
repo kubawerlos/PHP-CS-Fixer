@@ -333,6 +333,14 @@ class Foo {}
             '<?php $x?->count();',
             [],
         ];
+
+        yield [
+            '<?php
+                #[Foo(), Bar(), Baz()]
+                class Foo {}
+            ',
+            [],
+        ];
     }
 
     /**

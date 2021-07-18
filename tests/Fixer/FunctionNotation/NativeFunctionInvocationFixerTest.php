@@ -672,5 +672,14 @@ echo strlen($a);
         ];
 
         yield 'null safe operator' => ['<?php $x?->count();'];
+
+        yield 'multiple function-calls-like in attribute' => [
+            '<?php
+                #[Foo(), Bar(), Baz()]
+                class Foo {}
+            ',
+            null,
+            ['include' => ['@all']],
+        ];
     }
 }
