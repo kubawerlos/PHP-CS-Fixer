@@ -127,6 +127,14 @@ final class FunctionsAnalyzer
             return $functionUse->getShortName() === ltrim($functionUse->getFullName(), '\\');
         }
 
+        // check if is a part of an attribute: #[Foo(), Bar(), Baz()]
+        if (\defined('T_ATTRIBUTE')) {
+            $attributeStartIndex = $tokens->getPrevTokenOfKind($index, [[T_ATTRIBUTE]]);
+            if (null !== $attributeStartIndex && $index < $tokens->findBlockEnd(Tokens::BLOCK_TYPE_ATTRIBUTE, $attributeStartIndex)) {
+                return false;
+            }
+        }
+
         return true;
     }
 
